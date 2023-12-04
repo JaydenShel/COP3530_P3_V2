@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>UFOHunting</class>
+ <widget class="QMainWindow" name="UFOHunting">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,29 +17,13 @@
    <string notr="true">background: rgb(202, 255, 204)</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPlainTextEdit" name="plainTextEdit">
-    <property name="geometry">
-     <rect>
-      <x>-20</x>
-      <y>540</y>
-      <width>871</width>
-      <height>64</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">background: rgb(63, 114, 70)</string>
-    </property>
-    <property name="plainText">
-     <string>                       																						UFO Map</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>60</y>
       <width>831</width>
-      <height>481</height>
+      <height>491</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -70,17 +54,21 @@
     <widget class="QRadioButton" name="radioButton_2">
      <property name="geometry">
       <rect>
-       <x>400</x>
+       <x>390</x>
        <y>30</y>
-       <width>91</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: rgb(0, 0, 0)</string>
+      <string notr="true">color: rgb(0, 0, 0);
+font-family: OCR A Extended;
+font-size: 14px;
+border-width: 0px;
+text-align: center;</string>
      </property>
      <property name="text">
-      <string>Alpha Shape:</string>
+      <string>Alpha Shape</string>
      </property>
     </widget>
     <widget class="QRadioButton" name="radioButton">
@@ -88,31 +76,34 @@
       <rect>
        <x>510</x>
        <y>30</y>
-       <width>91</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: rgb(0, 0, 0)
-</string>
+      <string notr="true">color: rgb(0, 0, 0);
+font-family: OCR A Extended;
+font-size: 14px;
+border-width: 0px;
+text-align: center;</string>
      </property>
      <property name="text">
-      <string>Convex Hull:</string>
+      <string>Convex Hull</string>
      </property>
     </widget>
     <widget class="QComboBox" name="comboBox">
      <property name="geometry">
       <rect>
-       <x>100</x>
+       <x>80</x>
        <y>30</y>
-       <width>81</width>
+       <width>111</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
       <string notr="true">color:rgb(0, 0, 0);
-font-family: OCR-A-Extended;
-font-size: 12px;</string>
+font-family: OCR A Extended;
+font-size: 14px;</string>
      </property>
      <item>
       <property name="text">
@@ -121,122 +112,117 @@ font-size: 12px;</string>
      </item>
      <item>
       <property name="text">
-       <string>Cigar</string>
+       <string>cigar</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Circle</string>
+       <string>circle</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Cone</string>
+       <string>cone</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Cylinder</string>
+       <string>cylinder</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Diamond</string>
+       <string>diamond</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Disk</string>
+       <string>disk</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Egg</string>
+       <string>egg</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Oval</string>
+       <string>oval</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Sphere</string>
+       <string>sphere</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Teardrop</string>
+       <string>teardrop</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Triangle</string>
+       <string>triangle</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Rectangle</string>
+       <string>rectangle</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Changing</string>
+       <string>changing</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Fireball</string>
+       <string>fireball</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Formation</string>
+       <string>formation</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Flash</string>
+       <string>flash</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Light</string>
+       <string>light</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Other</string>
+       <string>other</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Unknown</string>
+       <string>unknown</string>
       </property>
      </item>
     </widget>
     <widget class="QComboBox" name="comboBox_2">
      <property name="geometry">
       <rect>
-       <x>250</x>
+       <x>270</x>
        <y>30</y>
-       <width>81</width>
+       <width>101</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
       <string notr="true">color:rgb(0, 0, 0);
-font-family: OCR-A-Extended;
-font-size: 12px;</string>
+font-family: OCR A Extended;
+font-size: 14px;</string>
      </property>
      <item>
       <property name="text">
        <string>-Select-</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>1910</string>
       </property>
      </item>
      <item>
@@ -604,24 +590,79 @@ font-size: 12px;</string>
        <string>1940</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>1910</string>
+      </property>
+     </item>
     </widget>
     <widget class="QPushButton" name="pushButton">
      <property name="geometry">
       <rect>
        <x>670</x>
        <y>30</y>
-       <width>91</width>
-       <height>31</height>
+       <width>101</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">color:rgb(0, 0, 0)
-</string>
+      <string notr="true">color: rgb(0, 0, 0);
+font-family: OCR A Extended;
+font-size: 14px;
+border-width: 0px;
+text-align: center;</string>
      </property>
      <property name="text">
       <string>Calculate</string>
      </property>
     </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+font-family: OCR A Extended;
+font-size: 16px;
+border-width: 0px;
+text-align: center;</string>
+     </property>
+     <property name="text">
+      <string>Shape:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>30</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+font-family: OCR A Extended;
+font-size: 16px;
+border-width: 0px;
+text-align: center;</string>
+     </property>
+     <property name="text">
+      <string>Year:</string>
+     </property>
+    </widget>
+    <zorder>radioButton_2</zorder>
+    <zorder>radioButton</zorder>
+    <zorder>pushButton</zorder>
+    <zorder>label_2</zorder>
+    <zorder>comboBox</zorder>
+    <zorder>label_3</zorder>
+    <zorder>comboBox_2</zorder>
    </widget>
    <widget class="QCustomPlot" name="customPlot" native="true">
     <property name="geometry">
@@ -633,20 +674,31 @@ font-size: 12px;</string>
      </rect>
     </property>
    </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>540</y>
+      <width>851</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: rgb(63, 114, 70);
+color: rgb(0, 0, 0);
+font-family: OCR A Extended;
+font-size: 40px;
+border-width: 0px;
+text-align: center;</string>
+    </property>
+    <property name="text">
+     <string>             UFO Map</string>
+    </property>
+   </widget>
    <zorder>widget</zorder>
-   <zorder>plainTextEdit</zorder>
    <zorder>label</zorder>
    <zorder>customPlot</zorder>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>819</width>
-     <height>21</height>
-    </rect>
-   </property>
+   <zorder>label_4</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
