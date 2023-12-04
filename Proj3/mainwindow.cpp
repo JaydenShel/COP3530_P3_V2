@@ -53,11 +53,15 @@ std::vector<Point> FilterData(std::string shape, std::string year, std::vector<s
     std::string q_year = "\"" + year + "\"";
     std::string q_shape = "\"" + shape + "\"";
 
+
+
     for (int i = 0; i < dataContainer.size(); i++) {
-        if (dataContainer[i][8].compare(year) == 0 && dataContainer[i][3].compare(shape)) {
-            std::string latitude = dataContainer[i][6];//.substr(1,dataContainer[i][6].size()-2);
-            std::string longitude = dataContainer[i][7];//.substr(1,dataContainer[i][7].size()-2);
-            filteredData.push_back(Point(::atof(longitude.c_str()),::atof(latitude.c_str())));
+        if (dataContainer[i][3].compare(shape) == 0 || shape == "-Select-") {
+            if (dataContainer[i][8].compare(year) == 0) {
+                std::string latitude = dataContainer[i][6];//.substr(1,dataContainer[i][6].size()-2);
+                std::string longitude = dataContainer[i][7];//.substr(1,dataContainer[i][7].size()-2);
+                filteredData.push_back({::atof(latitude.c_str()), ::atof(longitude.c_str())});
+            }
         }
     }
 
@@ -159,9 +163,26 @@ void MainWindow::on_pushButton_clicked()
     ui->customPlot->addGraph(ui->customPlot->xAxis,ui->customPlot->yAxis);
     QVector<double> x(filteredData.size());
     QVector<double> y(filteredData.size());
-    for(int i=0;i<filteredData.size();i++){
-        x[i] = filteredData[i].y;
-        y[i] = filteredData[i].x;
+    bool alphaShape = ui->radioButton_2->isChecked();
+    bool convexHull = ui->radioButton->isChecked();
+
+    if (year == "-Select-") {
+        QMessageBox msg;
+        msg.setText("Please select a year.");
+        msg.exec();
+        return;
+    }
+
+    if (filteredData.size() == 0) {
+        QMessageBox msg;
+        msg.setText("There are no matches for this search. Please select a different one.");
+        msg.exec();
+        return;
+    }
+
+    for(int i = 0; i < filteredData.size(); i++){
+        x[i] = filteredData[i].second;
+        y[i] = filteredData[i].first;
     }
 
     ui->customPlot->graph(0)->setPen(QColor(50, 50, 50, 255));
@@ -169,13 +190,28 @@ void MainWindow::on_pushButton_clicked()
     ui->customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
     ui->customPlot->graph(0)->setName("Outline of ");
     ui->customPlot->graph(0)->setData(x,y);
-    ui->customPlot->xAxis->setRange(-125,-70);
-    ui->customPlot->yAxis->setRange(28,50);
-    ui->customPlot->replot();
+    ui->customPlot->xAxis->setRange(-123,-68);
+    ui->customPlot->yAxis->setRange(27,46);
 
-    QMessageBox msg;
-    msg.setText(QString::fromStdString(std::to_string(filteredData[0].x)));
+    if (alphaShape == true) {
+        ui->customPlot->replot();
+        // run alpha shape algorithm
+    } else if (convexHull == true) {
+        ui->customPlot->replot();
+        // run convex hull algorithm
+    } else {
+        QMessageBox msg;
+        msg.setText("Please select an algorithm.");
+        msg.exec();
+        return;
+    }
+
+    /*QMessageBox msg;
+    msg.setText(QString::fromStdString(std::to_string(filteredData[0].first)));
     msg.exec();
+<<<<<<< HEAD
+    return; */
+=======
 
     for(int i = 0; i < conv.size(); i++){
         QCPItemLine *line = new QCPItemLine(ui->customPlot);
@@ -194,5 +230,6 @@ void MainWindow::on_pushButton_clicked()
     }
     
     return;
+>>>>>>> 7bb391c6a068b078116b83aac946d66198b65d84
 }
 
