@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "shapegen.h"
 #include "./ui_mainwindow.h"
 #include <QMessageBox>
 #include <vector>
@@ -67,11 +68,13 @@ void MainWindow::on_pushButton_clicked()
     std::vector<std::vector<std::string>> dataContainer = ReadData("ufo_sightings.csv");
     std::string shape = ui->comboBox->currentText().toStdString();
     std::string year = ui->comboBox_2->currentText().toStdString();
-
     std::vector<std::pair<float, float>> filteredData = FilterData(shape, year, dataContainer);
+    ShapeGenerator outline;
+    outline.ConvexHull(filteredData);
+
+
     QMessageBox msg;
-    if(filteredData[0].first >= 32.0)msg.setText(QString::fromStdString(std::to_string(filteredData[0].first)));
-    else msg.setText(QString::fromStdString("fail"));
+    msg.setText(QString::fromStdString("fail"));
     msg.exec();
     return;
 }
