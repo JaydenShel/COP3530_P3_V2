@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>UFOHunting</class>
- <widget class="QMainWindow" name="UFOHunting">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -667,10 +667,10 @@ text-align: center;</string>
    <widget class="QCustomPlot" name="customPlot" native="true">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>791</width>
-      <height>461</height>
+      <x>0</x>
+      <y>60</y>
+      <width>821</width>
+      <height>481</height>
      </rect>
     </property>
    </widget>
@@ -700,7 +700,6 @@ text-align: center;</string>
    <zorder>customPlot</zorder>
    <zorder>label_4</zorder>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
   <customwidget>
