@@ -7,6 +7,13 @@
 #include <fstream>
 #include <sstream>
 
+void delay()
+{
+    QTime dieTime= QTime::currentTime().addMSecs(100);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
 std::vector<std::vector<std::string>> ReadData(std::string filename) {
     std::vector<std::vector<std::string>> dataContainer;
     std::fstream fin;
@@ -126,6 +133,30 @@ void MainWindow::on_pushButton_clicked()
     /*QMessageBox msg;
     msg.setText(QString::fromStdString(std::to_string(filteredData[0].first)));
     msg.exec();
+<<<<<<< HEAD
     return; */
+=======
+
+    int x_val = -120;
+    int y_val = 35;
+    int x_val_1 = -120;
+    int y_val_2 = 35;
+    for(int i = 0; i < 100; i++){
+        QCPItemLine *line = new QCPItemLine(ui->customPlot);
+        line->setPen(QPen(Qt::red));
+        line->start->setCoords(x_val, y_val);
+        line->end->setCoords(x_val_1, y_val_2);
+        x_val++;
+        y_val++;
+        x_val_1 += 2;
+        y_val_2 += 2;
+
+        ui->customPlot->replot();
+        delay();
+
+    }
+    
+    return;
+>>>>>>> 7bb391c6a068b078116b83aac946d66198b65d84
 }
 
