@@ -1,11 +1,21 @@
 #include "mainwindow.h"
-//#include "shapegen.h"
+#include "shapegen.h"
+//#include "hulllib.h"
 #include "./ui_mainwindow.h"
 #include <QMessageBox>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
+
+struct Point
+{
+    float x, y;
+    Point(float inX,float inY){
+        x=inX;
+        y=inY;
+    }
+};
 
 void delay()
 {
@@ -37,9 +47,9 @@ std::vector<std::vector<std::string>> ReadData(std::string filename) {
     return dataContainer;
 }
 
-std::vector<std::pair<float, float>> FilterData(std::string shape, std::string year, std::vector<std::vector<std::string>> &dataContainer) {
+std::vector<Point> FilterData(std::string shape, std::string year, std::vector<std::vector<std::string>> &dataContainer) {
 
-    std::vector<std::pair<float, float>> filteredData;
+    std::vector<Point> filteredData;
     std::string q_year = "\"" + year + "\"";
     std::string q_shape = "\"" + shape + "\"";
 
@@ -47,7 +57,7 @@ std::vector<std::pair<float, float>> FilterData(std::string shape, std::string y
         if (dataContainer[i][8].compare(year) == 0 && dataContainer[i][3].compare(shape)) {
             std::string latitude = dataContainer[i][6];//.substr(1,dataContainer[i][6].size()-2);
             std::string longitude = dataContainer[i][7];//.substr(1,dataContainer[i][7].size()-2);
-            filteredData.push_back({::atof(latitude.c_str()), ::atof(longitude.c_str())});
+            filteredData.push_back(Point(::atof(longitude.c_str()),::atof(latitude.c_str())));
         }
     }
 
@@ -72,20 +82,86 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+// To find orientation of ordered triplet (p, q, r).
+// The function returns following values
+// 0 --> p, q and r are collinear
+// 1 --> Clockwise
+// 2 --> Counterclockwise
+int orientation(Point p, Point q, Point r)
+{
+    int val = (q.y - p.y) * (r.x - q.x) -
+              (q.x - p.x) * (r.y - q.y);
+
+    if (val == 0) return 0;  // collinear
+    return (val > 0)? 1: 2; // clock or counterclock wise
+}
+
+// Prints convex hull of a set of n points.
+std::vector<Point> jarvisMarch(std::vector<Point> points, int n)
+{
+    // There must be at least 3 points
+    if (n < 3) return points;
+
+    // Initialize Result
+    std::vector<Point> hull;
+
+    // Find the leftmost point
+    int l = 0;
+    for (int i = 1; i < n; i++)
+        if (points[i].x < points[l].x)
+            l = i;
+
+    // Start from leftmost point, keep moving counterclockwise
+    // until reach the start point again.  This loop runs O(h)
+    // times where h is number of points in result or output.
+    int p = l, q;
+    do
+    {
+        // Add current point to result
+        hull.push_back(points[p]);
+
+        // Search for a point 'q' such that orientation(p, q,
+        // x) is counterclockwise for all points 'x'. The idea
+        // is to keep track of last visited most counterclock-
+        // wise point in q. If any point 'i' is more counterclock-
+        // wise than q, then update q.
+        q = (p+1)%n;
+        for (int i = 0; i < n; i++)
+        {
+            // If i is more counterclockwise than current q, then
+            // update q
+            if (orientation(points[p], points[i], points[q]) == 2)
+                q = i;
+        }
+
+        // Now q is the most counterclockwise with respect to p
+        // Set p as q for next iteration, so that q is added to
+        // result 'hull'
+        p = q;
+
+    } while (p != l);  // While we don't come to first point
+
+    return hull;
+
+}
+
 void MainWindow::on_pushButton_clicked()
 {
+    ui->customPlot->clearGraphs();
     std::vector<std::vector<std::string>> dataContainer = ReadData("ufo_sightings.csv");
     std::string shape = ui->comboBox->currentText().toStdString();
     std::string year = ui->comboBox_2->currentText().toStdString();
-    std::vector<std::pair<float, float>> filteredData = FilterData(shape, year, dataContainer);
+    std::vector<Point> filteredData = FilterData(shape, year, dataContainer);
     //ShapeGenerator outline;
-    //outline.ConvexHull(filteredData);
+    //std::vector<std::pair<float,float>> conv = outline.QuickHull(filteredData);
+    std::vector<Point> conv = jarvisMarch(filteredData, filteredData.size());
     ui->customPlot->addGraph(ui->customPlot->xAxis,ui->customPlot->yAxis);
     QVector<double> x(filteredData.size());
     QVector<double> y(filteredData.size());
     for(int i=0;i<filteredData.size();i++){
-        x[i] = filteredData[i].second;
-        y[i] = filteredData[i].first;
+        x[i] = filteredData[i].y;
+        y[i] = filteredData[i].x;
     }
 
     ui->customPlot->graph(0)->setPen(QColor(50, 50, 50, 255));
@@ -98,22 +174,19 @@ void MainWindow::on_pushButton_clicked()
     ui->customPlot->replot();
 
     QMessageBox msg;
-    msg.setText(QString::fromStdString(std::to_string(filteredData[0].first)));
+    msg.setText(QString::fromStdString(std::to_string(filteredData[0].x)));
     msg.exec();
 
-    int x_val = -120;
-    int y_val = 35;
-    int x_val_1 = -120;
-    int y_val_2 = 35;
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < conv.size(); i++){
         QCPItemLine *line = new QCPItemLine(ui->customPlot);
         line->setPen(QPen(Qt::red));
-        line->start->setCoords(x_val, y_val);
-        line->end->setCoords(x_val_1, y_val_2);
-        x_val++;
-        y_val++;
-        x_val_1 += 2;
-        y_val_2 += 2;
+        if(i == conv.size()-1){
+            line->start->setCoords(conv[i].x, conv[i].y);
+            line->end->setCoords(conv[0].x, conv[0].y);
+        }else{
+            line->start->setCoords(conv[i].x, conv[i].y);
+            line->end->setCoords(conv[i+1].x, conv[i+1].y);
+        }
 
         ui->customPlot->replot();
         delay();

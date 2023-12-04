@@ -8,7 +8,7 @@
 #include <vector>
 #include <unordered_set>
 #include <math.h>
-using namespace std;
+
 
 class ShapeGenerator{
     struct Point{
@@ -23,9 +23,12 @@ class ShapeGenerator{
         bool operator==(const Point& rhs) const{
             return (this->x == rhs.x && this->y == rhs.y);
         }
+        bool operator<(const Point& rhs) const{
+            return (this->x < rhs.x);
+        }
         struct HashFunction{
             size_t operator()(const Point& p)const{
-                return hash<float>()(p.x*p.y+p.y);
+                return std::hash<float>()(p.x*p.y+p.y);
             }
         };
     };
@@ -127,8 +130,8 @@ class ShapeGenerator{
                 for(auto it2 = edges.begin();it2 != edges.end();it2++){
                     if(it1==it2) continue;
                     if(*it1 == *it2){
-                        remove[std::distance(edges.begin(), it1)];
-                        remove[std::distance(edges.begin(), it2)];
+                        //remove[std::distance(edges.begin(), it1)];
+                        //remove[std::distance(edges.begin(), it2)];
                     }
                 }
             }
@@ -145,11 +148,11 @@ class ShapeGenerator{
 
         d.triangles.erase(
             std::remove_if(d.triangles.begin(), d.triangles.end(),
-                     [&](auto const& tri) {
-                       return ((*tri.A == A || *tri.B == A || *tri.C == A) ||
-                               (*tri.A == B || *tri.B == B || *tri.C == B) ||
-                               (*tri.A == C || *tri.B == C || *tri.C == C));
-                     }),
+                           [&](auto const& tri) {
+                               return ((*tri.A == A || *tri.B == A || *tri.C == A) ||
+                                       (*tri.A == B || *tri.B == B || *tri.C == B) ||
+                                       (*tri.A == C || *tri.B == C || *tri.C == C));
+                           }),
             d.triangles.end());
         for (auto const& tri : d.triangles) {
             d.edges.push_back(Edge(*tri.A,*tri.B));
@@ -160,148 +163,155 @@ class ShapeGenerator{
     }
 
 private:
-    unordered_set<Point,Point::HashFunction> points;
-    vector<Edge> edges;
+    std::unordered_set<Point,Point::HashFunction> points;
+    std::vector<Edge> edges;
     float FindCos(Point p0, Point p1){
         float xLeg = p1.x - p0.x;
         float yLeg = p1.y - p0.y;
         float hyp = sqrt(pow(xLeg,2)+pow(yLeg,2));
         return xLeg/hyp;
     }
+    int findSide(Point p1, Point p2, Point p){
+        int val = (p.y - p1.y) * (p2.x - p1.x) -(p2.y - p1.y) * (p.x - p1.x);
+
+        if (val > 0)
+            return 1;
+        if (val < 0)
+            return -1;
+        return 0;
+    }
+    int lineDist(Point p1, Point p2, Point p)
+    {
+        return abs ((p.y - p1.y) * (p2.x - p1.x) -(p2.y - p1.y) * (p.x - p1.x));
+    }
+    void quickHull(std::vector<Point> a, std::vector<Point> &hull, int n, Point p1, Point p2, int side)
+    {
+        int ind = -1;
+        int max_dist = 0;
+
+        // finding the point with maximum distance
+        // from L and also on the specified side of L.
+        for (int i=0; i<n; i++)
+        {
+            int temp = lineDist(p1, p2, a[i]);
+            if (findSide(p1, p2, a[i]) == side && temp > max_dist)
+            {
+                ind = i;
+                max_dist = temp;
+            }
+        }
+
+        // If no point is found, add the end points
+        // of L to the convex hull.
+        if (ind == -1)
+        {
+            hull.push_back(p1);
+            hull.push_back(p2);
+            return;
+        }
+
+        // Recur for the two parts divided by a[ind]
+        quickHull(a,hull, n, a[ind], p1, -findSide(a[ind], p1, p2));
+        quickHull(a,hull, n, a[ind], p2, -findSide(a[ind], p2, p1));
+    }
 public:
     ShapeGenerator(){}
-    vector<Point> ConvexHull(vector<pair<float,float>> vals){
+    std::vector<std::pair<float,float>> ConvexHull(std::vector<std::pair<float,float>> &vals){
         int init_p0 = 0;
+        int heap_beg = -1;
         Point* P0;
         for(int i=0;i<vals.size();i++){
-            Point p(vals[i].first,vals[i].second);
+            Point p(vals[i].second,vals[i].first);
             points.insert(p);
 
-            if(vals[init_p0].second == vals[i].second){
-                if(vals[i].first < vals[init_p0].first){
+            if(vals[init_p0].first == vals[i].first){
+                if(vals[i].second < vals[init_p0].second){
                     init_p0 = i;
                     P0 = &p;
                 }
-            }else if(vals[init_p0].second > vals[i].second){
+            }else if(vals[init_p0].first > vals[i].first){
                 init_p0 = i;
                 P0 = &p;
             }
         }
+        std::vector<std::pair<float, Point>> pointHeap;
 
-        vector<pair<Point, float>> pointHeap(points.size());
-        int heap_end = 0;
-        for(auto it = points.begin();it!=points.end();it++){
+        for(auto it = points.begin();it != points.end();++it){
             if(*P0 == *it) continue;
             float curCos = FindCos(*P0,*it);
-            pair<Point, float> child(*it, curCos);
-
-            pointHeap[heap_end] = child;
-            if(heap_end ==0) continue;
-            int parentPos = (heap_end-1)/2;
-            int childPos = heap_end;
-            while(parentPos>=0 && pointHeap[parentPos].second < pointHeap[childPos].second){
-                pair<Point, float> temp(child);
-                pointHeap[childPos] = pointHeap[parentPos];
-                pointHeap[parentPos] =  temp;
-                childPos = parentPos;
-                parentPos = (childPos-1)/2;
-            }
-            heap_end++;
+            std::pair<float, Point> child(curCos,*it);
+            pointHeap.push_back(child);
         }
-        vector<Point> pointStack;
+        std::sort(pointHeap.begin(),pointHeap.end());
+        std::reverse(pointHeap.begin(),pointHeap.end());
+        std::vector<Point> pointStack;
         pointStack.push_back(*P0);
         for(int i=0;i<pointHeap.size();i++){
             if(i==0){
-                pointStack.push_back(pointHeap[0].first);
+                pointStack.push_back(pointHeap[0].second);
             }else{
-                pointStack.push_back(pointHeap[0].first);
+                pointStack.push_back(pointHeap[i].second);
                 Point* p1 = &pointStack[i-1];
                 Point* p2 = &pointStack[i];
                 Point* p3 = &pointStack[i+1];
                 float sign = (p2->x - p1->x)*(p3->y-p1->y)-(p2->y-p1->y)*(p3->x-p1->x);
-                if(sign<0){
-                    pointStack.erase(pointStack.begin()+i-1);
-                }
-            }
 
-            pointHeap[0] = pointHeap[--heap_end];
-            pointHeap[heap_end].second = -FLT_MAX;
-            int index = 0;
-            while(index*2+1 <heap_end && pointHeap[index].second > min(pointHeap[index*2+1].second,pointHeap[index*2+2].second)){
-                if(pointHeap[index*2+1].second >pointHeap[index*2+2].second){
-                    pair<Point, float> temp(pointHeap[index]);
-                    pointHeap[index] = pointHeap[index*2+1];
-                    pointHeap[index*2+1] = temp;
-                    index = index*2+1;
-                }else{
-                    pair<Point, float> temp(pointHeap[index]);
-                    pointHeap[index] = pointHeap[index*2+2];
-                    pointHeap[index*2+2] = temp;
-                    index = index*2+2;
+                if(sign<0){
+
+                    pointStack.erase(pointStack.begin()+i-1,pointStack.begin()+i);
                 }
             }
         }
-        return pointStack;
+        std::vector<std::pair<float,float>> result;
+        for(auto p:pointStack){
+            result.push_back(std::pair<float,float>(p.x,p.y));
+        }
+        return result;
     }
-    vector<Point> AlphaShape(vector<pair<float,float>> vals){
+    std::vector<std::pair<std::pair<float,float>>> AlphaShape(std::vector<std::pair<float,float>> &vals){
 
+        std::sort(vals.begin(),vals.end());
         for(int i=0;i<vals.size();i++){
-            Point p(vals[i].first,vals[i].second);
+            Point p(vals[i].second,vals[i].first);
             points.insert(p);
         }
+        std::vector<Point> sortedVals;
 
-        vector<pair<Point, float>> pointHeap(points.size());
-        int heap_end = 0;
-        for(auto it = points.begin();it!=points.end();it++){
-            pair<Point, float> child(*it, it->x);
-
-            pointHeap[heap_end] = child;
-            if(heap_end ==0) continue;
-            int parentPos = (heap_end-1)/2;
-            int childPos = heap_end;
-            while(parentPos>=0 && pointHeap[parentPos].second > pointHeap[childPos].second){
-                pair<Point, float> temp(child);
-                pointHeap[childPos] = pointHeap[parentPos];
-                pointHeap[parentPos] =  temp;
-                childPos = parentPos;
-                parentPos = (childPos-1)/2;
-            }
-            heap_end++;
+        for(auto it = points.begin();it != points.end();++it){
+            sortedVals.push_back(*it));
         }
-        vector<Point> pointStack;
-        for(int i=0;i<pointHeap.size();i++){
-            if(i==0){
-                pointStack.push_back(pointHeap[0].first);
-            }else{
-                pointStack.push_back(pointHeap[0].first);
-                Point* p1 = &pointStack[i-1];
-                Point* p2 = &pointStack[i];
-                Point* p3 = &pointStack[i+1];
-                float sign = (p2->x - p1->x)*(p3->y-p1->y)-(p2->y-p1->y)*(p3->x-p1->x);
-                if(sign<0){
-                    pointStack.erase(pointStack.begin()+i-1);
-                }
-            }
+        Delaunay d;
+        d = triangulate(sortedVals);
 
-            pointHeap[0] = pointHeap[--heap_end];
-            pointHeap[heap_end].second = -FLT_MAX;
-            int index = 0;
-            while(index*2+1 <heap_end && pointHeap[index].second < min(pointHeap[index*2+1].second,pointHeap[index*2+2].second)){
-                if(pointHeap[index*2+1].second <pointHeap[index*2+2].second){
-                    pair<Point, float> temp(pointHeap[index]);
-                    pointHeap[index] = pointHeap[index*2+1];
-                    pointHeap[index*2+1] = temp;
-                    index = index*2+1;
-                }else{
-                    pair<Point, float> temp(pointHeap[index]);
-                    pointHeap[index] = pointHeap[index*2+2];
-                    pointHeap[index*2+2] = temp;
-                    index = index*2+2;
-                }
-            }
-        }
+        std::vector<std::pair<std::pair<float,float>>>> result;
+
+        return d.edges;
 
     }
+    std::vector<std::pair<float,float>> QuickHull(std::vector<std::pair<float,float>> &vals){
+        points.clear();
+        std::vector<std::pair<float,float>> result;
+        std::vector<Point> setPoints;
+        for(int i=0;i<vals.size();i++){
+            Point p(vals[i].second,vals[i].first);
+            if(points.insert(p).second){
+                setPoints.push_back(p);
+            };
+        }
+        int min_x = 0, max_x = 0;
+        for (int i=1; i<setPoints.size(); i++){
+            if (setPoints[i].x < setPoints[min_x].x)
+                min_x = i;
+            if (setPoints[i].x > setPoints[max_x].x)
+                max_x = i;
+        }
+        std::vector<Point> hull;
+        quickHull(setPoints,hull,setPoints.size(), setPoints[min_x],setPoints[max_x],1);
 
+        for(auto p:hull){
+            result.push_back(std::pair<float,float>(p.x,p.y));
+        }
+        return result;
+    }
 };
 
