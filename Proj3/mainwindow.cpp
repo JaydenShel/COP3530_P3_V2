@@ -53,21 +53,18 @@ std::vector<Point> FilterData(std::string shape, std::string year, std::vector<s
     std::string q_year = "\"" + year + "\"";
     std::string q_shape = "\"" + shape + "\"";
 
-
-
     for (int i = 0; i < dataContainer.size(); i++) {
-        if (dataContainer[i][3].compare(shape) == 0 || shape == "-Select-") {
-            if (dataContainer[i][8].compare(year) == 0) {
-                std::string latitude = dataContainer[i][6];//.substr(1,dataContainer[i][6].size()-2);
-                std::string longitude = dataContainer[i][7];//.substr(1,dataContainer[i][7].size()-2);
-                filteredData.push_back({::atof(latitude.c_str()), ::atof(longitude.c_str())});
-            }
+        if (dataContainer[i][8].compare(year) == 0 && dataContainer[i][3].compare(shape)) {
+            std::string latitude = dataContainer[i][6];//.substr(1,dataContainer[i][6].size()-2);
+            std::string longitude = dataContainer[i][7];//.substr(1,dataContainer[i][7].size()-2);
+            filteredData.push_back(Point(::atof(longitude.c_str()),::atof(latitude.c_str())));
         }
     }
 
 
     return filteredData;
 }
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -151,66 +148,34 @@ std::vector<Point> jarvisMarch(std::vector<Point> points, int n)
 
 void MainWindow::on_pushButton_clicked()
 {
-    ui->customPlot->clearGraphs();
+    //ui->customPlot->clearGraphs();
     std::vector<std::vector<std::string>> dataContainer = ReadData("ufo_sightings.csv");
     std::string shape = ui->comboBox->currentText().toStdString();
     std::string year = ui->comboBox_2->currentText().toStdString();
     std::vector<Point> filteredData = FilterData(shape, year, dataContainer);
+    std::vector<std::pair<float,float>> postData;
+    for(Point p: filteredData){
+        postData.push_back(std::pair<float,float>(p.x,p.y));
+    }
     //ShapeGenerator outline;
     //std::vector<std::pair<float,float>> conv = outline.QuickHull(filteredData);
     std::vector<Point> conv = jarvisMarch(filteredData, filteredData.size());
+    //std::vector<std::pair<std::pair<float,float>,std::pair<float,float>>> conv = outline.AlphaShape(postData);
     ui->customPlot->addGraph(ui->customPlot->xAxis,ui->customPlot->yAxis);
     QVector<double> x(filteredData.size());
     QVector<double> y(filteredData.size());
-    bool alphaShape = ui->radioButton_2->isChecked();
-    bool convexHull = ui->radioButton->isChecked();
-
-    if (year == "-Select-") {
-        QMessageBox msg;
-        msg.setText("Please select a year.");
-        msg.exec();
-        return;
-    }
-
-    if (filteredData.size() == 0) {
-        QMessageBox msg;
-        msg.setText("There are no matches for this search. Please select a different one.");
-        msg.exec();
-        return;
-    }
-
-    for(int i = 0; i < filteredData.size(); i++){
-        x[i] = filteredData[i].second;
-        y[i] = filteredData[i].first;
+    for(int i=0;i<postData.size();i++){
+        x[i] = postData[i].first;
+        y[i] = postData[i].second;
     }
 
     ui->customPlot->graph(0)->setPen(QColor(50, 50, 50, 255));
     ui->customPlot->graph(0)->setLineStyle(QCPGraph::lsNone);
     ui->customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
-    ui->customPlot->graph(0)->setName("Outline of ");
     ui->customPlot->graph(0)->setData(x,y);
-    ui->customPlot->xAxis->setRange(-123,-68);
-    ui->customPlot->yAxis->setRange(27,46);
-
-
-    if (alphaShape == true) {
-        // run alpha shape algorithm/draw lines
-        ui->customPlot->replot();
-    } else if (convexHull == true) {
-        // run convex hull algorithm/draw lines
-        ui->customPlot->replot();
-    } else {
-        QMessageBox msg;
-        msg.setText("Please select an algorithm.");
-        msg.exec();
-        return;
-    }
-
-    /*QMessageBox msg;
-    msg.setText(QString::fromStdString(std::to_string(filteredData[0].first)));
-    msg.exec();
-<<<<<<< HEAD
-    return; */
+    ui->customPlot->xAxis->setRange(-125,-70);
+    ui->customPlot->yAxis->setRange(28,50);
+    ui->customPlot->replot();
 
     for(int i = 0; i < conv.size(); i++){
         QCPItemLine *line = new QCPItemLine(ui->customPlot);
@@ -227,6 +192,18 @@ void MainWindow::on_pushButton_clicked()
         delay();
 
     }
+    /*for(int i = 0; i < conv.size(); i++){
+        QCPItemLine *line = new QCPItemLine(ui->customPlot);
+        line->setPen(QPen(Qt::red));
+
+        line->start->setCoords(conv[i].first.first, conv[i].first.second);
+        line->end->setCoords(conv[i].second.first, conv[i].second.second);
+
+
+        ui->customPlot->replot();
+        delay();
+
+    }*/
     
     return;
 }

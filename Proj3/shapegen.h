@@ -268,7 +268,7 @@ public:
         }
         return result;
     }
-    std::vector<std::pair<std::pair<float,float>>> AlphaShape(std::vector<std::pair<float,float>> &vals){
+    std::vector<std::pair<std::pair<float,float>,std::pair<float,float>>> AlphaShape(std::vector<std::pair<float,float>> &vals){
 
         std::sort(vals.begin(),vals.end());
         for(int i=0;i<vals.size();i++){
@@ -278,14 +278,18 @@ public:
         std::vector<Point> sortedVals;
 
         for(auto it = points.begin();it != points.end();++it){
-            sortedVals.push_back(*it));
+            sortedVals.push_back(*it);
         }
         Delaunay d;
         d = triangulate(sortedVals);
 
-        std::vector<std::pair<std::pair<float,float>>>> result;
-
-        return d.edges;
+        std::vector<std::pair<std::pair<float,float>,std::pair<float,float>>> result;
+        for(auto e:d.edges){
+            std::pair<float,float> p0(e.A->x,e.A->y);
+            std::pair<float,float> p1(e.B->x,e.B->y);
+            result.push_back(std::pair<std::pair<float,float>,std::pair<float,float>>(p0,p1));
+        }
+        return result;
 
     }
     std::vector<std::pair<float,float>> QuickHull(std::vector<std::pair<float,float>> &vals){
