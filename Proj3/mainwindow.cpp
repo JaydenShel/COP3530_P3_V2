@@ -59,7 +59,6 @@ std::vector<std::pair<float, float>> FilterData(std::string shape, std::string y
     return filteredData;
 }
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -117,12 +116,13 @@ void MainWindow::on_pushButton_clicked()
     ui->customPlot->xAxis->setRange(-123,-68);
     ui->customPlot->yAxis->setRange(27,46);
 
+
     if (alphaShape == true) {
+        // run alpha shape algorithm/draw lines
         ui->customPlot->replot();
-        // run alpha shape algorithm
     } else if (convexHull == true) {
+        // run convex hull algorithm/draw lines
         ui->customPlot->replot();
-        // run convex hull algorithm
     } else {
         QMessageBox msg;
         msg.setText("Please select an algorithm.");
@@ -135,7 +135,6 @@ void MainWindow::on_pushButton_clicked()
     msg.exec();
 <<<<<<< HEAD
     return; */
-=======
 
     int x_val = -120;
     int y_val = 35;
@@ -157,6 +156,5 @@ void MainWindow::on_pushButton_clicked()
     }
     
     return;
->>>>>>> 7bb391c6a068b078116b83aac946d66198b65d84
 }
 
