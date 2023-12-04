@@ -1,6 +1,9 @@
 #include "mainwindow.h"
-
+#include <vector>
+#include <string>
 #include <QApplication>
+#include <fstream>
+#include <sstream>
 
 int main(int argc, char *argv[])
 {
@@ -9,3 +12,5 @@ int main(int argc, char *argv[])
     w.show();
     return a.exec();
 }
+
+
