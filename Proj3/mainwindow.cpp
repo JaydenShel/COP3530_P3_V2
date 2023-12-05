@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "shapegen.h"
-//#include "hulllib.h"
 #include "./ui_mainwindow.h"
 #include <QMessageBox>
 #include <vector>
@@ -17,6 +16,7 @@ struct Point
     }
 };
 
+//For the drawing effect
 void delay()
 {
     QTime dieTime= QTime::currentTime().addMSecs(100);
@@ -24,6 +24,7 @@ void delay()
         QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
 }
 
+//parses the entire csv file
 std::vector<std::vector<std::string>> ReadData(std::string filename) {
     std::vector<std::vector<std::string>> dataContainer;
     std::fstream fin;
@@ -47,6 +48,7 @@ std::vector<std::vector<std::string>> ReadData(std::string filename) {
     return dataContainer;
 }
 
+//As it says, filters data for specific tags
 std::vector<Point> FilterData(std::string shape, std::string year, std::vector<std::vector<std::string>> &dataContainer) {
 
     std::vector<Point> filteredData;
@@ -149,6 +151,7 @@ std::vector<Point> jarvisMarch(std::vector<Point> points, int n)
 
 void MainWindow::on_pushButton_clicked()
 {
+    //item initialization and data filtering
     ui->customPlot->clearItems();
     std::vector<std::vector<std::string>> dataContainer = ReadData("ufo_sightings.csv");
     std::string shape = ui->comboBox->currentText().toStdString();
@@ -158,7 +161,7 @@ void MainWindow::on_pushButton_clicked()
     for(Point p: filteredData){
         postData.push_back(std::pair<float,float>(p.x,p.y));
     }
-    //ShapeGenerator outline;
+    //ShapeGenerator outline; saved from previous use
     //std::vector<std::pair<float,float>> conv = outline.QuickHull(filteredData);
     std::vector<Point> conv = jarvisMarch(filteredData, filteredData.size());
     //std::vector<std::pair<std::pair<float,float>,std::pair<float,float>>> conv = outline.AlphaShape(postData);
@@ -169,6 +172,7 @@ void MainWindow::on_pushButton_clicked()
     bool alphaShape = ui->radioButton_2->isChecked();
     bool convexHull = ui->radioButton->isChecked();
 
+    //pop ups for different user input cases
     if (year == "-Select-") {
         QMessageBox msg;
         msg.setText("Please select a year.");
@@ -189,6 +193,7 @@ void MainWindow::on_pushButton_clicked()
         y[i] = postData[i].second;
     }
 
+    //plot stuff for data
     ui->customPlot->graph(0)->setPen(QColor(50, 50, 50, 255));
     ui->customPlot->graph(0)->setLineStyle(QCPGraph::lsNone);
     ui->customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));

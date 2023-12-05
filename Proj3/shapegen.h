@@ -20,12 +20,14 @@ class ShapeGenerator{
             y = y_in;
         }
         Point(){}
+        //overloads for hash and set ordering
         bool operator==(const Point& rhs) const{
             return (this->x == rhs.x && this->y == rhs.y);
         }
         bool operator<(const Point& rhs) const{
             return (this->x < rhs.x);
         }
+        //custom hash function for unordered_set
         struct HashFunction{
             size_t operator()(const Point& p)const{
                 return std::hash<float>()(p.x*p.y+p.y);
@@ -44,6 +46,8 @@ class ShapeGenerator{
             return ((rhs.A == A && rhs.B == B) || (rhs.A == B && rhs.B == A));
         }
     };
+
+    //Next few I don't understand but are math for Delauney triangulation
     struct Circle{
         float x,y,r;
         Circle(){}
@@ -165,6 +169,7 @@ class ShapeGenerator{
 private:
     std::unordered_set<Point,Point::HashFunction> points;
     std::vector<Edge> edges;
+    //general last minute functions to try quickhull
     float FindCos(Point p0, Point p1){
         float xLeg = p1.x - p0.x;
         float yLeg = p1.y - p0.y;
@@ -220,6 +225,7 @@ public:
         int init_p0 = 0;
         int heap_beg = -1;
         Point* P0;
+        //finds lowest leftmost point
         for(int i=0;i<vals.size();i++){
             Point p(vals[i].second,vals[i].first);
             points.insert(p);
@@ -234,6 +240,8 @@ public:
                 P0 = &p;
             }
         }
+        //attempted to do a heap sort in previous build
+        //pushed all of them in and just used std::sort
         std::vector<std::pair<float, Point>> pointHeap;
 
         for(auto it = points.begin();it != points.end();++it){
@@ -244,8 +252,11 @@ public:
         }
         std::sort(pointHeap.begin(),pointHeap.end());
         std::reverse(pointHeap.begin(),pointHeap.end());
+        //reading them through from largest cos() from the initial point
         std::vector<Point> pointStack;
         pointStack.push_back(*P0);
+        //is suppose to loop through and calculate "left" or "right" turns based on the cross product of two most recent lines added
+        //doesn't seem to work :/
         for(int i=0;i<pointHeap.size();i++){
             if(i==0){
                 pointStack.push_back(pointHeap[0].second);
@@ -268,6 +279,8 @@ public:
         }
         return result;
     }
+    //This creates the delauney triangulation and would have sorted through to choose only the edges that satisfy the Alpha variable
+    //couldn't figure out the math behind what was happening
     std::vector<std::pair<std::pair<float,float>,std::pair<float,float>>> AlphaShape(std::vector<std::pair<float,float>> &vals){
 
         std::sort(vals.begin(),vals.end());
@@ -292,16 +305,19 @@ public:
         return result;
 
     }
+    //Quickhull attempt to have even a slow example
     std::vector<std::pair<float,float>> QuickHull(std::vector<std::pair<float,float>> &vals){
         points.clear();
         std::vector<std::pair<float,float>> result;
         std::vector<Point> setPoints;
+        //set removes any duplicate points
         for(int i=0;i<vals.size();i++){
             Point p(vals[i].second,vals[i].first);
             if(points.insert(p).second){
                 setPoints.push_back(p);
             };
         }
+        //finding the left and right bounds of the hull
         int min_x = 0, max_x = 0;
         for (int i=1; i<setPoints.size(); i++){
             if (setPoints[i].x < setPoints[min_x].x)
@@ -310,6 +326,7 @@ public:
                 max_x = i;
         }
         std::vector<Point> hull;
+        //divide and conquer
         quickHull(setPoints,hull,setPoints.size(), setPoints[min_x],setPoints[max_x],1);
 
         for(auto p:hull){
