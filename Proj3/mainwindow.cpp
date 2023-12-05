@@ -50,14 +50,14 @@ std::vector<std::vector<std::string>> ReadData(std::string filename) {
 std::vector<Point> FilterData(std::string shape, std::string year, std::vector<std::vector<std::string>> &dataContainer) {
 
     std::vector<Point> filteredData;
-    std::string q_year = "\"" + year + "\"";
-    std::string q_shape = "\"" + shape + "\"";
 
     for (int i = 0; i < dataContainer.size(); i++) {
-        if (dataContainer[i][8].compare(year) == 0 && dataContainer[i][3].compare(shape)) {
-            std::string latitude = dataContainer[i][6];//.substr(1,dataContainer[i][6].size()-2);
-            std::string longitude = dataContainer[i][7];//.substr(1,dataContainer[i][7].size()-2);
-            filteredData.push_back(Point(::atof(longitude.c_str()),::atof(latitude.c_str())));
+        if (dataContainer[i][3].compare(shape) == 0 || shape == "-Select-") {
+            if (dataContainer[i][8].compare(year) == 0) {
+                std::string latitude = dataContainer[i][6];
+                std::string longitude = dataContainer[i][7];
+                filteredData.push_back(Point(::atof(longitude.c_str()), ::atof(latitude.c_str())));
+            }
         }
     }
 
@@ -75,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->label->setPixmap(pix);
     ui->customPlot->setBackground(QBrush(Qt::transparent));
     ui->customPlot->axisRect()->setBackground(QBrush(Qt::transparent));
+    ui->customPlot->setInteraction(QCP::iRangeDrag, true);
 }
 
 MainWindow::~MainWindow()
@@ -148,7 +149,7 @@ std::vector<Point> jarvisMarch(std::vector<Point> points, int n)
 
 void MainWindow::on_pushButton_clicked()
 {
-    //ui->customPlot->clearGraphs();
+    ui->customPlot->clearItems();
     std::vector<std::vector<std::string>> dataContainer = ReadData("ufo_sightings.csv");
     std::string shape = ui->comboBox->currentText().toStdString();
     std::string year = ui->comboBox_2->currentText().toStdString();
@@ -164,6 +165,25 @@ void MainWindow::on_pushButton_clicked()
     ui->customPlot->addGraph(ui->customPlot->xAxis,ui->customPlot->yAxis);
     QVector<double> x(filteredData.size());
     QVector<double> y(filteredData.size());
+
+    bool alphaShape = ui->radioButton_2->isChecked();
+    bool convexHull = ui->radioButton->isChecked();
+
+    if (year == "-Select-") {
+        QMessageBox msg;
+        msg.setText("Please select a year.");
+        msg.exec();
+        return;
+    }
+
+    if (filteredData.size() == 0) {
+        QMessageBox msg;
+        msg.setText("There are no matches for this search. Please select a different one.");
+        msg.exec();
+        return;
+    }
+
+
     for(int i=0;i<postData.size();i++){
         x[i] = postData[i].first;
         y[i] = postData[i].second;
@@ -175,7 +195,18 @@ void MainWindow::on_pushButton_clicked()
     ui->customPlot->graph(0)->setData(x,y);
     ui->customPlot->xAxis->setRange(-125,-70);
     ui->customPlot->yAxis->setRange(28,50);
-    ui->customPlot->replot();
+    if (alphaShape == true) {
+        ui->customPlot->replot();
+        // run alpha shape algorithm
+    } else if (convexHull == true) {
+        ui->customPlot->replot();
+        // run convex hull algorithm
+    } else {
+        QMessageBox msg;
+        msg.setText("Please select an algorithm.");
+        msg.exec();
+        return;
+    }
 
     for(int i = 0; i < conv.size(); i++){
         QCPItemLine *line = new QCPItemLine(ui->customPlot);
@@ -187,7 +218,7 @@ void MainWindow::on_pushButton_clicked()
             line->start->setCoords(conv[i].x, conv[i].y);
             line->end->setCoords(conv[i+1].x, conv[i+1].y);
         }
-
+        //ui->progressBar->setValue(i/conv.size()*100); woulda been cool
         ui->customPlot->replot();
         delay();
 
